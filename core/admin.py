@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import WhatsAppMessage, Contact, Group
 
-# Register your models here.
+admin.site.register(WhatsAppMessage)
+admin.site.register(Contact)
+admin.site.register(Group)
