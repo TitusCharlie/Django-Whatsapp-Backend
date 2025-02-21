@@ -84,3 +84,5 @@ whitenoise==6.9.0
 wikipedia==1.4.0
 wsproto==1.2.0
 zope.interface==7.2
+dj-database-url
+
