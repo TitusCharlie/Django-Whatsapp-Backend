@@ -48,7 +48,8 @@ class WhatsAppMessageViewSet(viewsets.ModelViewSet):
         return self.queryset
 
     def perform_create(self, serializer):
-        message_obj = serializer.save(user=self.request.user)
+        message_obj = serializer.save()
+        # message_obj = serializer.save(user=self.request.user)
         if message_obj.scheduled_at:
             schedule_whatsapp_message.apply_async((message_obj.id,), eta=message_obj.scheduled_at)
         else:
