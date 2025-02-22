@@ -26,8 +26,9 @@ SECRET_KEY = 'django-insecure-y_+!jiz1_yx31-b=ppx-10vwujz-u4jan2a8k14(l2!e$fe^ew
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["whastapp-automation.onrender.com"]
-
+#ALLOWED_HOSTS = ["whastapp-automation.onrender.com"]
+#ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = ["django-whatsapp-backend.onrender.com", "127.0.0.1", "localhost"]
 # Application definition
 
 INSTALLED_APPS = [
