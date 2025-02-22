@@ -42,9 +42,10 @@ class GroupViewSet(viewsets.ModelViewSet):
 class WhatsAppMessageViewSet(viewsets.ModelViewSet):
     queryset = WhatsAppMessage.objects.all()
     serializer_class = WhatsAppMessageSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return WhatsAppMessage.objects.filter(user=self.request.user)
+        return queryset
 
     def perform_create(self, serializer):
         message_obj = serializer.save(user=self.request.user)
@@ -56,9 +57,10 @@ class WhatsAppMessageViewSet(viewsets.ModelViewSet):
 class WhatsAppStatusViewSet(viewsets.ModelViewSet):
     queryset = WhatsAppStatus.objects.all()
     serializer_class = WhatsAppStatusSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return WhatsAppStatus.objects.filter(user=self.request.user)
+        return queryset
 
     def perform_create(self, serializer):
         status_obj = serializer.save(user=self.request.user)
