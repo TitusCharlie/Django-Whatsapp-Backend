@@ -34,7 +34,7 @@ class WhatsAppMessage(models.Model):
         ('Sent', 'Sent'),
         ('Failed', 'Failed')
     ]
-    user = models.ForeignKey(User, nul=True, blank=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     phone_number = models.CharField(max_length=20)
     message = models.TextField()
     scheduled_at = models.DateTimeField(null=True, blank=True)
