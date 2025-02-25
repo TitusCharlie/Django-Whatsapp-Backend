@@ -68,6 +68,7 @@ class WhatsAppStatusViewSet(viewsets.ModelViewSet):
         return self.queryset
 
     def perform_create(self, serializer):
+        status_obj = serializer.save()
         # status_obj = serializer.save(user=self.request.user)
         if not status_obj.scheduled_at:
             # schedule_whatsapp_status.delay(status_obj.id)
