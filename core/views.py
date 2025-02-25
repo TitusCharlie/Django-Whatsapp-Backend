@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets, permissions
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
 import requests
 from django.conf import settings
 from .models import Contact, WhatsAppMessage, WhatsAppStatus, Group
@@ -13,13 +12,14 @@ from .tasks import schedule_whatsapp_message, schedule_whatsapp_status, fetch_co
 class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
-    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Contact.objects.filter(user=self.request.user)
+        """Return all contacts without filtering by user."""
+        return Contact.objects.all()  # Removed filtering by self.request.user
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        """Save the contact without associating it with a user."""
+        serializer.save()  # Removed user association
 
     @action(detail=False, methods=['post'])
     def fetch_from_wordpress(self, request):
@@ -30,7 +30,7 @@ class ContactViewSet(viewsets.ModelViewSet):
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [AllowAny]
+    permission_classes = []
 
     @action(detail=False, methods=['get'])
     def available(self, request):
@@ -42,7 +42,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 class WhatsAppMessageViewSet(viewsets.ModelViewSet):
     queryset = WhatsAppMessage.objects.all()
     serializer_class = WhatsAppMessageSerializer
-    permission_classes = [AllowAny]
+    permission_classes = []
 
     def get_queryset(self):
         return self.queryset
@@ -58,7 +58,7 @@ class WhatsAppMessageViewSet(viewsets.ModelViewSet):
 class WhatsAppStatusViewSet(viewsets.ModelViewSet):
     queryset = WhatsAppStatus.objects.all()
     serializer_class = WhatsAppStatusSerializer
-    permission_classes = [AllowAny]
+    permission_classes = []
 
     def get_queryset(self):
         return self.queryset
