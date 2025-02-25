@@ -50,10 +50,14 @@ class WhatsAppMessageViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         message_obj = serializer.save()
         # message_obj = serializer.save(user=self.request.user)
+        # if message_obj.scheduled_at:
+        #     schedule_whatsapp_message.apply_async((message_obj.id,), eta=message_obj.scheduled_at)
+        # else:
+        #     schedule_whatsapp_message.delay(message_obj.id)
         if message_obj.scheduled_at:
-            schedule_whatsapp_message.apply_async((message_obj.id,), eta=message_obj.scheduled_at)
+            schedule_whatsapp_message(message_obj.id,)
         else:
-            schedule_whatsapp_message.delay(message_obj.id)
+            schedule_whatsapp_message(message_obj.id)
 
 class WhatsAppStatusViewSet(viewsets.ModelViewSet):
     queryset = WhatsAppStatus.objects.all()
@@ -66,4 +70,5 @@ class WhatsAppStatusViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         status_obj = serializer.save(user=self.request.user)
         if not status_obj.scheduled_at:
-            schedule_whatsapp_status.delay(status_obj.id)
+            # schedule_whatsapp_status.delay(status_obj.id)
+            schedule_whatsapp_status(status_obj.id)
