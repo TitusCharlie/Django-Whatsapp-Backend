@@ -42,7 +42,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 class WhatsAppMessageViewSet(viewsets.ModelViewSet):
     queryset = WhatsAppMessage.objects.all()
     serializer_class = WhatsAppMessageSerializer
-    permission_classes = []
+    # permission_classes = []
 
     def get_queryset(self):
         return self.queryset
@@ -55,14 +55,14 @@ class WhatsAppMessageViewSet(viewsets.ModelViewSet):
         # else:
         #     schedule_whatsapp_message.delay(message_obj.id)
         if message_obj.scheduled_at:
-            schedule_whatsapp_message(message_obj.id,)
+            schedule_whatsapp_message(message_obj.id)
         else:
             schedule_whatsapp_message(message_obj.id)
 
 class WhatsAppStatusViewSet(viewsets.ModelViewSet):
     queryset = WhatsAppStatus.objects.all()
     serializer_class = WhatsAppStatusSerializer
-    permission_classes = []
+    # permission_classes = []
 
     def get_queryset(self):
         return self.queryset

@@ -19,7 +19,7 @@ class Group(models.Model):
             self.save()
 
 class Contact(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Owner of the contact
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)  # Owner of the contact
     name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -53,7 +53,7 @@ class WhatsAppStatus(models.Model):
         ('Posted', 'Posted'),
         ('Failed', 'Failed')
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     text = models.CharField(max_length=255, blank=True, null=True)
     media = models.FileField(upload_to='status_media/', blank=True, null=True)  # For images/videos
     scheduled_at = models.DateTimeField(blank=True, null=True)  # Optional scheduling
