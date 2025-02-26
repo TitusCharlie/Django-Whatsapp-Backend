@@ -62,3 +62,6 @@ class WhatsAppStatus(models.Model):
 
     def __str__(self):
         return f"Status by {self.user.username} at {self.scheduled_at or self.created_at}"
+
+    def is_scheduled(self):
+        return self.scheduled_at is not None and self.scheduled_at > timezone.now()
