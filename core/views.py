@@ -21,11 +21,11 @@ class ContactViewSet(viewsets.ModelViewSet):
         """Save the contact without associating it with a user."""
         serializer.save()  # Removed user association
 
-    # @action(detail=False, methods=['post'])
-    # def fetch_from_wordpress(self, request):
-    #     """Trigger fetching contacts from a WordPress landing page."""
-    #     fetch_contacts_from_wordpress.delay()
-    #     return Response({"message": "Fetching contacts..."})
+    @action(detail=False, methods=['post'])
+    def fetch_from_wordpress(self, request):
+        """Trigger fetching contacts from a WordPress landing page."""
+        fetch_contacts_from_wordpress.delay()
+        return Response({"message": "Fetching contacts..."})
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()

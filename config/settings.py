@@ -54,8 +54,10 @@ REST_FRAMEWORK = {
         # 'DEFAULT_PERMISSION_CLASSES': [
         #     'rest_framework.permissions.AllowAny',
         # ],
-        'DEFAULT_AUTHENTICATION_CLASSES': (),
+        'DEFAULT_AUTHENTICATION_CLASSES': [],
         'DEFAULT_PERMISSION_CLASSES': [],
+        'DEFAULT_PAGINATION_CLASS': None,  # Disables pagination
+        'PAGE_SIZE': 100  # If you want to increase limit instead of disabling pagination
         }
 
 MIDDLEWARE = [
