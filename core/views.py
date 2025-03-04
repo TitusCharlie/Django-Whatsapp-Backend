@@ -20,7 +20,7 @@ class ContactViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Save the contact without associating it with a user."""
         serializer.save()  # Removed user association
-
+ 
     @action(detail=False, methods=['post'])
     def fetch_from_wordpress(self, request):
         """Trigger fetching contacts from a WordPress landing page."""
