@@ -18,8 +18,14 @@ class ContactViewSet(viewsets.ModelViewSet):
         return Contact.objects.all()  # Removed filtering by self.request.user
 
     def perform_create(self, serializer):
-        """Save the contact without associating it with a user."""
-        serializer.save()  # Removed user association
+        # Adjust field names to match the incoming WordPress request
+        name = self.request.data.get("Name")  # "Name" from WordPress
+        phone_number = self.request.data.get("tel-463")  # "tel-463" from WordPress
+
+        if not name or not phone_number:
+            raise serializer.ValidationError({"error": "Name and Phone Number are required."})
+
+        serializer.save(name=name, phone_number=phone_number)
  
     @action(detail=False, methods=['post'])
     def fetch_from_wordpress(self, request):
