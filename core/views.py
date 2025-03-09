@@ -43,16 +43,20 @@ class ContactViewSet(viewsets.ModelViewSet):
     serializer_class = ContactSerializer
 
     def perform_create(self, serializer):
-        # Print and log the entire request data
-        print(f"Received Data: {self.request.data}")
-        logger.info(f"Received Data: {self.request.data}")
+        # Force logging request data
+        print(f"DEBUG LOG: Received Data = {self.request.data}")
+        logger.info(f"DEBUG LOG: Received Data = {self.request.data}")
 
-        # Extract fields
-        name = self.request.data.get("Name")  # Matches WordPress field
-        phone_number = self.request.data.get("tel-463")  # Matches WordPress field
+        # Return error response if data is empty
+        if not self.request.data:
+            raise serializers.ValidationError({"error": "No data received. Ensure you are sending JSON with the correct fields."})
 
-        print(f"Extracted Name: {name}, Phone: {phone_number}")
-        logger.info(f"Extracted Name: {name}, Phone: {phone_number}")
+        # Extract fields (check WordPress field names carefully)
+        name = self.request.data.get("Name")  # Ensure WordPress is actually sending "Name"
+        phone_number = self.request.data.get("tel-463")  # Ensure WordPress is actually sending "tel-463"
+
+        print(f"DEBUG LOG: Extracted Name = {name}, Phone = {phone_number}")
+        logger.info(f"DEBUG LOG: Extracted Name = {name}, Phone = {phone_number}")
 
         # Validate required fields
         if not name or not phone_number:
