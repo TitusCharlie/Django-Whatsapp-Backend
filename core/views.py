@@ -42,29 +42,23 @@ class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
 
-    def get_queryset(self):
-        """Return all contacts without filtering by user."""
-        return Contact.objects.all()
-
     def perform_create(self, serializer):
-        # Log request data
+        # Print and log the entire request data
+        print(f"Received Data: {self.request.data}")
         logger.info(f"Received Data: {self.request.data}")
 
-        # Extract fields from WordPress request
-        name = self.request.data.get("Name")  # Ensure this matches WordPress field
-        phone_number = self.request.data.get("tel-463")  # Ensure this matches WordPress field
+        # Extract fields
+        name = self.request.data.get("Name")  # Matches WordPress field
+        phone_number = self.request.data.get("tel-463")  # Matches WordPress field
+
+        print(f"Extracted Name: {name}, Phone: {phone_number}")
+        logger.info(f"Extracted Name: {name}, Phone: {phone_number}")
 
         # Validate required fields
         if not name or not phone_number:
             raise serializers.ValidationError({"name": "This field is required.", "phone_number": "This field is required."})
 
         serializer.save(name=name, phone_number=phone_number)
-
-    @action(detail=False, methods=['post'])
-    def fetch_from_wordpress(self, request):
-        """Trigger fetching contacts from a WordPress landing page."""
-        fetch_contacts_from_wordpress.delay()
-        return Response({"message": "Fetching contacts..."})
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
