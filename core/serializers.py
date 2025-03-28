@@ -14,7 +14,7 @@ class GroupSerializer(serializers.ModelSerializer):
         return ContactSerializer(contacts, many=True).data
 
 class ContactSerializer(serializers.ModelSerializer):
-    group = GroupSerializer(read_only=True)
+    # group = GroupSerializer(read_only=True)
 
     class Meta:
         model = Contact
