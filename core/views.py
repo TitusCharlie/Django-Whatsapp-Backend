@@ -51,11 +51,19 @@ class ContactViewSet(viewsets.ModelViewSet):
             print(f"DEBUG LOG: Raw Request Body = {raw_body}")
             logger.info(f"DEBUG LOG: Raw Request Body = {raw_body}")
 
+            # Print request.data to see what Django is parsing
+            print(f"DEBUG LOG: request.data = {self.request.data}")
+            logger.info(f"DEBUG LOG: request.data = {self.request.data}")
+
             # Try parsing JSON manually if request.data is empty
             if not self.request.data:
                 data = json.loads(raw_body)
             else:
                 data = self.request.data
+
+            # Log extracted data
+            print(f"DEBUG LOG: Parsed Data = {data}")
+            logger.info(f"DEBUG LOG: Parsed Data = {data}")
 
             # Extract fields
             name = data.get("Name")
@@ -66,13 +74,19 @@ class ContactViewSet(viewsets.ModelViewSet):
 
             # Validate required fields
             if not name or not phone_number:
-                raise serializers.ValidationError({"name": "This field is required.", "phone_number": "This field is required."})
+                raise serializers.ValidationError({
+                    "name": "This field is required.",
+                    "phone_number": "This field is required."
+                })
 
             # Save the mapped data
             serializer.save(name=name, phone_number=phone_number)
 
         except json.JSONDecodeError:
-            raise serializers.ValidationError({"error": "Invalid JSON format. Ensure you are sending valid JSON data."})
+            raise serializers.ValidationError({
+                "error": "Invalid JSON format. Ensure you are sending valid JSON data."
+            })
+
 
 
 class GroupViewSet(viewsets.ModelViewSet):
