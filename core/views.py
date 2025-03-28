@@ -43,17 +43,35 @@ class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
 
-    def perform_create(self, serializer):
-        data = self.request.data  # Extract request data
-
-        # Check if required fields are present
-        name = data.get("Name")
-        phone_number = data.get("tel-463")
+    def create(self, request, *args, **kwargs):
+        """Create a new contact from WordPress or manual input."""
+        name = request.data.get("Name") or request.data.get("name")
+        phone_number = request.data.get("tel-463") or request.data.get("phone_number")
 
         if not name or not phone_number:
-            raise serializers.ValidationError({"error": "Missing name or phone number"})
+            return Response({"error": "Name and phone number are required."}, status=400)
 
-        serializer.save(name=name, phone_number=phone_number)
+        contact, created = Contact.objects.get_or_create(name=name, phone_number=phone_number)
+        serializer = self.get_serializer(contact)
+        return Response(serializer.data, status=201 if created else 200)
+
+    @action(detail=False, methods=['post'])
+    def fetch_from_wordpress(self, request):
+        """Fetch contacts from WordPress API and save them."""
+        wordpress_url = "https://skillelearn.online/wp-json/wp/v2/contact_form_entries"
+        response = requests.get(wordpress_url)
+
+        if response.status_code != 200:
+            return Response({"error": "Failed to fetch contacts from WordPress."}, status=response.status_code)
+
+        contacts = response.json()
+        for entry in contacts:
+            name = entry.get("Name")
+            phone_number = entry.get("tel-463")
+            if name and phone_number:
+                Contact.objects.get_or_create(name=name, phone_number=phone_number)
+
+        return Response({"message": "Contacts fetched successfully."}, status=200)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
