@@ -18,8 +18,7 @@ class ContactSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Contact
-        fields = '__all__'
-        read_only_fields = ['user']
+        fields = ["name", "phone_number"]
 
 class WhatsAppMessageSerializer(serializers.ModelSerializer):
     class Meta:
