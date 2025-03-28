@@ -44,11 +44,17 @@ class ContactViewSet(viewsets.ModelViewSet):
     serializer_class = ContactSerializer
 
     def perform_create(self, serializer):
-        data = self.request.data
-        serializer.save(
-            name=data.get("Name"), 
-            phone_number=data.get("tel-463")
-        )
+        data = self.request.data  # Extract request data
+
+        # Check if required fields are present
+        name = data.get("Name")
+        phone_number = data.get("tel-463")
+
+        if not name or not phone_number:
+            raise serializers.ValidationError({"error": "Missing name or phone number"})
+
+        serializer.save(name=name, phone_number=phone_number)
+
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
