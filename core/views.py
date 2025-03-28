@@ -38,32 +38,42 @@ logger = logging.getLogger(__name__)
 #         fetch_contacts_from_wordpress.delay()
 #         return Response({"message": "Fetching contacts..."})
 
+import json
+
 class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
 
     def perform_create(self, serializer):
-        # Print and log raw request body
-        raw_body = self.request.body.decode("utf-8")
-        print(f"DEBUG LOG: Raw Request Body = {raw_body}")
-        logger.info(f"DEBUG LOG: Raw Request Body = {raw_body}")
+        """Ensure JSON data is correctly parsed and mapped."""
+        try:
+            raw_body = self.request.body.decode("utf-8")
+            print(f"DEBUG LOG: Raw Request Body = {raw_body}")
+            logger.info(f"DEBUG LOG: Raw Request Body = {raw_body}")
 
-        # Ensure request data exists
-        if not self.request.data:
-            raise serializers.ValidationError({"error": "No data received. Ensure you are sending JSON with the correct fields."})
+            # Try parsing JSON manually if request.data is empty
+            if not self.request.data:
+                data = json.loads(raw_body)
+            else:
+                data = self.request.data
 
-        # Extract fields
-        name = self.request.data.get("Name")
-        phone_number = self.request.data.get("tel-463")
+            # Extract fields
+            name = data.get("Name")
+            phone_number = data.get("tel-463")
 
-        print(f"DEBUG LOG: Extracted Name = {name}, Phone = {phone_number}")
-        logger.info(f"DEBUG LOG: Extracted Name = {name}, Phone = {phone_number}")
+            print(f"DEBUG LOG: Extracted Name = {name}, Phone = {phone_number}")
+            logger.info(f"DEBUG LOG: Extracted Name = {name}, Phone = {phone_number}")
 
-        # Validate required fields
-        if not name or not phone_number:
-            raise serializers.ValidationError({"name": "This field is required.", "phone_number": "This field is required."})
+            # Validate required fields
+            if not name or not phone_number:
+                raise serializers.ValidationError({"name": "This field is required.", "phone_number": "This field is required."})
 
-        serializer.save(name=name, phone_number=phone_number)
+            # Save the mapped data
+            serializer.save(name=name, phone_number=phone_number)
+
+        except json.JSONDecodeError:
+            raise serializers.ValidationError({"error": "Invalid JSON format. Ensure you are sending valid JSON data."})
+
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
