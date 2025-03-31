@@ -2,31 +2,45 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-class Group(models.Model):
+class WhatsAppGroup(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    landing_page = models.CharField(max_length=255)  # Identifies where contacts come from
+    max_capacity = models.IntegerField(default=250)  # WhatsApp group size limit
     created_at = models.DateTimeField(auto_now_add=True)
-    is_full = models.BooleanField(default=False)
-    whatsapp_group_link = models.URLField(blank=True, null=True)  # Invite link
-    max_contacts = models.IntegerField(default=256)  # Default WhatsApp group limit
+
+    def current_size(self):
+        return self.contacts.count()
+
+    def is_full(self):
+        return self.current_size() >= self.max_capacity
 
     def __str__(self):
-        return self.name
-    
-    def check_if_full(self):
-        """Check if the group has reached the max number of contacts."""
-        if self.contact_set.count() >= self.max_contacts:
-            self.is_full = True
-            self.save()
+        return f"{self.name} ({self.current_size()}/{self.max_capacity})"
 
 class Contact(models.Model):
-    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)  # Owner of the contact
     name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, unique=True)
+    landing_page = models.CharField(max_length=255)  # Links to the correct group
+    group = models.ForeignKey(WhatsAppGroup, on_delete=models.SET_NULL, null=True, related_name="contacts")
     created_at = models.DateTimeField(auto_now_add=True)
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)  # Assigned WhatsApp group
+
+    def assign_to_group(self):
+        """Assigns the contact to an available group or creates a new one."""
+        existing_group = WhatsAppGroup.objects.filter(landing_page=self.landing_page).order_by('-created_at').first()
+        
+        if existing_group and not existing_group.is_full():
+            self.group = existing_group
+        else:
+            new_group = WhatsAppGroup.objects.create(
+                name=f"{self.landing_page} Group {WhatsAppGroup.objects.filter(landing_page=self.landing_page).count() + 1}",
+                landing_page=self.landing_page
+            )
+            self.group = new_group
+        
+        self.save()
 
     def __str__(self):
-        return self.name
+        return f"{self.name} - {self.phone_number} ({self.landing_page})"
 
 class WhatsAppMessage(models.Model):
     STATUS_CHOICES = [
