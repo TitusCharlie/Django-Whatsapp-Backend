@@ -1,8 +1,7 @@
 from celery import shared_task
 import requests
 from django.conf import settings
-from .models import WhatsAppMessage, WhatsAppStatus, Contact, Group
-#from .whatsapp_automation import auto_reply_to_message
+from .models import WhatsAppMessage, WhatsAppStatus, Contact, WhatsAppGroup
 import logging
 
 logger = logging.getLogger(__name__)
@@ -115,7 +114,7 @@ def auto_reply_task(phone_number, incoming_message):
 
 @shared_task
 def fetch_contacts_from_wordpress():
-    """Fetch new contacts from a WordPress landing page and assign them to a group."""
+    """Fetch new contacts from WordPress and assign them to the right WhatsApp group."""
     try:
         url = settings.WORDPRESS_CONTACTS_API
         response = requests.get(url)
@@ -125,8 +124,9 @@ def fetch_contacts_from_wordpress():
         for contact_data in contacts:
             phone_number = contact_data.get("phone")
             name = contact_data.get("name", "")
+            group_id = contact_data.get("group_id")  # Ensure WordPress includes this
 
-            if not phone_number:
+            if not phone_number or not group_id:
                 continue  # Skip invalid entries
 
             contact, created = Contact.objects.get_or_create(
@@ -134,23 +134,51 @@ def fetch_contacts_from_wordpress():
             )
 
             if created:
-                assign_contact_to_group(contact)
+                assign_contact_to_group(contact, group_id)
 
     except requests.RequestException as e:
         logger.error(f"Failed to fetch contacts: {str(e)}")
         return f"Failed: {str(e)}"
 
-def assign_contact_to_group(contact):
-    """Assign a contact to an available group, creating new groups if needed."""
-    group = Group.objects.filter(is_full=False).first()
+def assign_contact_to_group(contact, group_id):
+    """Assign a contact to the correct WhatsApp group based on group_id."""
+    group = WhatsAppGroup.objects.filter(landing_page_id=group_id, is_full=False).first()
 
     if not group:
-        group = Group.objects.create(name=f"Group {Group.objects.count() + 1}")
+        group = WhatsAppGroup.objects.create(name=f"Group {WhatsAppGroup.objects.count() + 1}", landing_page_id=group_id)
 
     contact.group = group
     contact.save()
 
-    # Check if the group is full (limit to 250 contacts)
+    # Send the contact to WhatsApp
+    send_contact_to_whatsapp(contact, group)
+
+    # Mark group as full if it reaches 250 members
     if Contact.objects.filter(group=group).count() >= 250:
         group.is_full = True
         group.save()
+
+def send_contact_to_whatsapp(contact, group):
+    """Send a contact's phone number to the correct WhatsApp group."""
+    if not group.whatsapp_id:
+        logger.warning(f"Group {group.id} does not have a WhatsApp ID.")
+        return
+
+    url = f"https://waba.360dialog.io/v1/groups/{group.whatsapp_id}/add"
+    headers = {
+        "Authorization": f"Bearer {settings.WHATSAPP_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {"phone_number": contact.phone_number}
+
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        response_data = response.json()
+
+        if response.status_code == 200 and response_data.get("success"):
+            logger.info(f"Successfully added {contact.phone_number} to {group.name}")
+        else:
+            logger.error(f"Failed to add {contact.phone_number}: {response_data}")
+
+    except requests.RequestException as e:
+        logger.error(f"Error sending contact to WhatsApp: {str(e)}")

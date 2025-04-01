@@ -4,7 +4,7 @@ from django.utils import timezone
 
 class WhatsAppGroup(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    landing_page = models.CharField(max_length=255)  # Identifies where contacts come from
+    landing_page = models.CharField(max_length=255, null=True, blank=True) # Identifies where contacts come from
     max_capacity = models.IntegerField(default=250)  # WhatsApp group size limit
     created_at = models.DateTimeField(auto_now_add=True)
 

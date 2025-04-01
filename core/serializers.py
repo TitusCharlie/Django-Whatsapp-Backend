@@ -1,24 +1,20 @@
 from rest_framework import serializers
-from .models import Contact, WhatsAppMessage, WhatsAppStatus, Group
+from .models import Contact, WhatsAppMessage, WhatsAppStatus, WhatsAppGroup
 
-class GroupSerializer(serializers.ModelSerializer):
-    contacts = serializers.SerializerMethodField()
+class WhatsAppGroupSerializer(serializers.ModelSerializer):
+    current_size = serializers.SerializerMethodField()
 
     class Meta:
-        model = Group
-        fields = '__all__'
+        model = WhatsAppGroup
+        fields = ['id', 'name', 'landing_page', 'max_capacity', 'current_size', 'created_at']
 
-    def get_contacts(self, obj):
-        """Return the contacts belonging to this group."""
-        contacts = obj.contact_set.all()
-        return ContactSerializer(contacts, many=True).data
+    def get_current_size(self, obj):
+        return obj.current_size()
 
 class ContactSerializer(serializers.ModelSerializer):
-    # group = GroupSerializer(read_only=True)
-
     class Meta:
         model = Contact
-        fields = ["name", "phone_number"]
+        fields = ['id', 'name', 'phone_number', 'landing_page', 'group', 'created_at']
 
 class WhatsAppMessageSerializer(serializers.ModelSerializer):
     class Meta:
